@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build: ./backend
+    container_name: shop-backend
+    ports:
+      - "5001:5000"
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+      - JWT_SECRET=beauty-shop-jwt-secret-2024-production
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/prisma:/app/prisma
+      - ./uploads:/app/public/uploads
+    networks:
+      - shop-network
+
+  # Customer Frontend
+  frontend:
+    build: ./next-app
+    container_name: shop-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5001/api
+      - INTERNAL_API_URL=http://backend:5000/api
+    volumes:
+      - ./next-app:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - shop-network
+
+  # Admin Panel
+  admin:
+    build: ./admin-panel
+    container_name: shop-admin
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5001/api
+      - INTERNAL_API_URL=http://backend:5000/api
+    volumes:
+      - ./admin-panel:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - shop-network
+
+networks:
+  shop-network:
+    driver: bridge
