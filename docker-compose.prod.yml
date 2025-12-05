@@ -9,12 +9,12 @@ services:
     container_name: shop-backend
     restart: always
     ports:
-      - "5001:5000"
+      - "5000:5000"
     environment:
       - NODE_ENV=production
       - PORT=5000
       - DATABASE_URL=file:/app/prisma/prod.db
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://YOUR_VPS_IP:3000,http://YOUR_VPS_IP:3001
+      - CORS_ORIGINS=https://88shop.ir,https://www.88shop.ir,https://admin.88shop.ir
       - JWT_SECRET=beauty-shop-jwt-secret-2024-production
     volumes:
       - ./backend-data:/app/prisma
@@ -33,7 +33,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:5001/api
+      - NEXT_PUBLIC_API_URL=https://api.88shop.ir
       - INTERNAL_API_URL=http://backend:5000/api
     depends_on:
       - backend
@@ -51,7 +51,7 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:5001/api
+      - NEXT_PUBLIC_API_URL=https://api.88shop.ir
       - INTERNAL_API_URL=http://backend:5000/api
     depends_on:
       - backend
