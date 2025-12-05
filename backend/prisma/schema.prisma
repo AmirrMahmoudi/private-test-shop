@@ -1,0 +1,257 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==================== Brand Model ====================
+// برندهای مختلف محصولات
+model Brand {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  nameEn      String?              // نام انگلیسی برای جستجو
+  logo        String?              // لوگوی برند
+  description String?
+  isActive    Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([name])
+}
+
+// ==================== Category Model ====================
+// دسته‌بندی‌های اصلی محصولات
+model Category {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  slug          String   @unique
+  description   String?
+  image         String?
+  subcategories Subcategory[]
+  products      Product[]
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([slug])
+}
+
+// ==================== Subcategory Model ====================
+// زیردسته‌ها - جدا از دسته اصلی برای مدیریت بهتر
+model Subcategory {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products    Product[]
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@unique([categoryId, slug])
+  @@index([categoryId])
+}
+
+// ==================== Product Model ====================
+// محصول اصلی - اطلاعات کلی محصول
+model Product {
+  id            String      @id @default(cuid())
+  name          String
+  slug          String      @unique
+  description   String?
+  
+  // روابط
+  categoryId    String
+  category      Category    @relation(fields: [categoryId], references: [id])
+  subcategoryId String?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+  brandId       String?
+  brand         Brand?       @relation(fields: [brandId], references: [id])
+  
+  // قیمت پایه (حداقل قیمت variants)
+  basePrice     Int
+  
+  // تصاویر - JSON array
+  images        String      // ["url1", "url2", ...]
+  
+  // تنظیمات نمایش
+  isFeatured    Boolean     @default(false)
+  isActive      Boolean     @default(true)
+  rating        Float?
+  reviewCount   Int         @default(0)
+  
+  // تگ‌ها و ویژگی‌ها - JSON
+  tags          String?     // ["بدون سولفات", "ارگانیک"]
+  specifications String?    // {"حجم": "500ml", "وزن": "200g"}
+  
+  // واریانت‌ها
+  variants      ProductVariant[]
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([brandId])
+  @@index([isFeatured])
+  @@index([slug])
+}
+
+// ==================== Product Variant Model ====================
+// واریانت‌های محصول - رنگ، سایز، حجم
+model ProductVariant {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // نام واریانت (مثلاً "رنگ قرمز - 50ml")
+  name        String
+  sku         String   @unique    // کد شناسایی منحصر (مثل: LIP-RED-50ML)
+  
+  // ویژگی‌های واریانت
+  color       String?              // نام رنگ
+  colorCode   String?              // کد هگز رنگ (#FF0000)
+  size        String?              // سایز/حجم (50ml, 100ml, L, XL)
+  
+  // قیمت و موجودی
+  price       Int                  // قیمت این واریانت
+  comparePrice Int?                // قیمت قبل از تخفیف
+  stock       Int      @default(0)
+  
+  // تصویر اختصاصی این واریانت
+  image       String?
+  
+  isDefault   Boolean  @default(false)  // واریانت پیش‌فرض
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+  @@index([sku])
+}
+
+// ==================== Order Model ====================
+model Order {
+  id           String      @id @default(cuid())
+  orderNumber  String      @unique  // شماره سفارش قابل نمایش
+  
+  // آیتم‌های سفارش
+  items        OrderItem[]
+  
+  // مبالغ
+  subtotal     Int                  // جمع قیمت آیتم‌ها
+  shippingCost Int         @default(0)
+  discount     Int         @default(0)
+  total        Int                  // مبلغ نهایی
+  
+  // وضعیت
+  status       String      @default("pending") // pending, confirmed, processing, shipped, delivered, cancelled
+  
+  // اطلاعات مشتری
+  customerName  String
+  customerPhone String
+  customerEmail String?
+  
+  // اطلاعات ارسال - JSON
+  shippingAddress String   // {"province": "", "city": "", "address": "", "postalCode": ""}
+  
+  // یادداشت
+  notes        String?
+  
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([orderNumber])
+  @@index([status])
+  @@index([customerPhone])
+}
+
+// ==================== Order Item Model ====================
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  // اطلاعات محصول (snapshot در زمان خرید)
+  productId   String
+  productName String
+  variantId   String?
+  variantName String?
+  sku         String?
+  
+  // قیمت و تعداد
+  price       Int
+  quantity    Int
+  total       Int      // price * quantity
+  
+  // تصویر
+  image       String?
+
+  @@index([orderId])
+}
+
+// ==================== Admin Model ====================
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // hashed
+  name      String?
+  role      String   @default("admin") // admin, super-admin
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================== Hero Model ====================
+model Hero {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String
+  image       String
+  button1Text String?
+  button1Link String?
+  button2Text String?
+  button2Link String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ==================== Settings Model ====================
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   // JSON value
+  updatedAt DateTime @updatedAt
+}
+
+// ==================== Festival Model ====================
+// جشنواره‌ها و بنرهای تبلیغاتی
+model Festival {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  image       String   // تصویر پس‌زمینه یا اصلی
+  
+  startDate   DateTime?
+  endDate     DateTime?
+  
+  // دکمه اقدام
+  buttonText  String?
+  link        String?
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
