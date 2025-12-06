@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import type { Metadata } from "next";
 import NavbarServer from "@/components/NavbarServer";
 import Hero from "@/components/Hero";
@@ -12,18 +15,25 @@ import NewArrivals from "@/components/NewArrivals";
 // SEO Metadata
 export const metadata: Metadata = {
   title: "فروشگاه لوازم آرایشی بیوتی‌شاپ | محصولات اصل و با کیفیت",
-  description: "خرید لوازم آرایشی، مراقبت پوست، مراقبت مو و عطر و ادکلن با بهترین قیمت. محصولات اصل از برترین برندهای جهان.",
-  keywords: ["لوازم آرایشی", "مراقبت پوست", "مراقبت مو", "عطر و ادکلن", "بیوتی شاپ"],
+  description:
+    "خرید لوازم آرایشی، مراقبت پوست، مراقبت مو و عطر و ادکلن با بهترین قیمت. محصولات اصل از برترین برندهای جهان.",
+  keywords: [
+    "لوازم آرایشی",
+    "مراقبت پوست",
+    "مراقبت مو",
+    "عطر و ادکلن",
+    "بیوتی شاپ",
+  ],
   openGraph: {
     title: "فروشگاه لوازم آرایشی بیوتی‌شاپ",
     description: "بهترین محصولات زیبایی و آرایشی با قیمت مناسب",
     type: "website",
     locale: "fa_IR",
-  }
+  },
 };
 
 // Enable ISR for this page
-export const revalidate = 3600; // Revalidate every hour
+// export const revalidate = 3600; // Revalidate every hour
 
 export default function Home() {
   return (
@@ -39,7 +49,7 @@ export default function Home() {
         <TrustFeatures />
       </main>
       <footer className="bg-muted py-8 text-center text-muted-foreground">
-        <p>© ۱۴۰۳ فروشگاه لوازم آرایشی بیوتی‌شاپ. تمامی حقوق محفوظ است.</p>
+        <p>© ۱۴۰۴ فروشگاه لوازم آرایشی بیوتی‌شاپ. تمامی حقوق محفوظ است.</p>
       </footer>
     </div>
   );
