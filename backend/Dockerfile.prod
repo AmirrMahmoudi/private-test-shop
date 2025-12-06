@@ -1,40 +1,52 @@
-# backend/Dockerfile.prod – نسخه‌ای که دیگه هیچوقت .prisma not found نمی‌ده
+# Backend Production Dockerfile – FIXED for PNPM + Prisma (Dec 2025)
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# فقط openssl برای Prisma
+# Install dependencies for Prisma
 RUN apk add --no-cache openssl
 
-# pnpm
+# PNPM setup
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+# Copy package files + prisma schema
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 
-# همه چیز رو نصب کن (devDependencies هم لازمه برای generate)
+# Install dependencies (all, including dev for generate)
 RUN pnpm install --frozen-lockfile
 
+# Copy source
 COPY . .
 
-# این دو خط پشت سر هم ۱۰۰٪ فولدر .prisma رو می‌سازه
+# Generate Prisma Client (now in standard path due to schema output)
 RUN npx prisma generate --schema=./prisma/schema.prisma
-RUN ls -la node_modules/.prisma/client/ || echo "ERROR: .prisma not created!"
 
+# Verify (optional, but good for debug)
+RUN ls -la node_modules/.prisma/client/ || echo "WARNING: .prisma still not in standard path"
+
+# Build app
 RUN pnpm run build
 
-# Production
+# ─────────────────────── Production Stage ───────────────────────
 FROM node:20-alpine
+
 WORKDIR /app
 RUN apk add --no-cache openssl
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+# Copy package + install prod deps
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
+# Copy built files
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Copy Prisma Client (now from standard path)
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Create uploads dir
 RUN mkdir -p public/uploads
 
 EXPOSE 5000
