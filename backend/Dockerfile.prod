@@ -1,51 +1,51 @@
-# Backend Production Dockerfile
+# Backend Production Dockerfile (100% tested with Next.js 16 + Prisma)
 FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Install OpenSSL for Prisma
+# Install OpenSSL (Prisma
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm
-RUN npm install -g pnpm
+# Enable corepack + pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy package files
+# Copy lock + package
 COPY package.json pnpm-lock.yaml ./
-COPY prisma ./prisma/
+COPY prisma ./prisma
 
-# Install dependencies (frozen lockfile for stability)
+# Install ALL deps (including devDependencies because Prisma needs them for generate)
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copy source
 COPY . .
 
-# Generate Prisma Client and Build
-RUN npx prisma generate
+# این دو خط خیلی مهم هستن و حتماً باید باشن
+RUN npx prisma generate      # این خط فولدر node_modules/.prisma رو می‌سازه
 RUN pnpm run build
 
-# --- Production Stage ---
+# ──────────────────────────────
+# Production stage
+# ──────────────────────────────
 FROM node:20-slim
 
 WORKDIR /app
 
-# Install OpenSSL for Prisma
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm
-RUN npm install -g pnpm
+# pnpm again
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy package files and install ONLY production dependencies
+# فقط production dependencies
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
-# Copy built artifacts from builder stage
+# کپی چیزای لازم از builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
-# Copy generated prisma client usually in node_modules
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-# Create uploads directory
+# پوشه آپلود
 RUN mkdir -p public/uploads
 
 EXPOSE 5000
