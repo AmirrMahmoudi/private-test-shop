@@ -1,0 +1,42 @@
+# Frontend Production Dockerfile
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build Next.js app
+# Note: standard next build requires environment variables if they are used at build time (like for static pages)
+# Passing dummy vars or relying on runtime envs if configured correctly
+ENV NEXT_TELEMETRY_DISABLED 1
+RUN pnpm run build
+
+# --- Production Stage ---
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy necessary files
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
