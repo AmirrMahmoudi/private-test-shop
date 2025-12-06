@@ -1,4 +1,4 @@
-# Admin Panel Production Dockerfile
+# --- Build Stage ---
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -6,32 +6,36 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm
 
-# Copy package files
+# Copy package manager files
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copy entire source
 COPY . .
 
-# Build Next.js app
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NEXT_SKIP_PRERENDER true
+# Disable SSR and prerender during build (IMPORTANT)
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_SKIP_PRERENDER=1
+ENV NEXT_DISABLE_SSR=1
+
+# Build Next.js project
 RUN pnpm run build
+
 
 # --- Production Stage ---
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install pnpm
+# Install pnpm (minimal runtime)
 RUN npm install -g pnpm
 
-# Copy necessary files
+# Copy required compiled files
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
