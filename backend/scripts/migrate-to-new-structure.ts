@@ -11,8 +11,7 @@
  * Run with: npx ts-node backend/scripts/migrate-to-new-structure.ts
  */
 
-import { PrismaClient } from '@prisma/client';
-
+import { PrismaClient } from "@prisma/client/index";
 const prisma = new PrismaClient();
 
 async function main() {
