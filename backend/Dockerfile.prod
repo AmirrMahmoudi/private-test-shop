@@ -21,8 +21,7 @@ COPY . .
 # Generate Prisma Client (now in standard path due to schema output)
 RUN npx prisma generate --schema=./prisma/schema.prisma
 
-# Verify (optional, but good for debug)
-RUN ls -la node_modules/.prisma/client/ || echo "WARNING: .prisma still not in standard path"
+
 
 # Build app
 RUN pnpm run build
@@ -42,8 +41,7 @@ RUN pnpm install --prod --frozen-lockfile
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
-# Copy Prisma Client (now from standard path)
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Copy Prisma Client (standard @prisma/client path)
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Create uploads dir
