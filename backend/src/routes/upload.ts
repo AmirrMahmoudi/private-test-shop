@@ -27,17 +27,15 @@ if (!fs.existsSync(thumbnailsDir)) {
 }
 
 // Configure multer storage
-const storage = sharp
-    ? multer.memoryStorage()  // Memory for processing with Sharp
-    : multer.diskStorage({    // Disk storage fallback
-        destination: (req, file, cb) => cb(null, uploadsDir),
-        filename: (req, file, cb) => {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-            const ext = path.extname(file.originalname);
-            const nameWithoutExt = path.basename(file.originalname, ext);
-            cb(null, nameWithoutExt + '-' + uniqueSuffix + ext);
-        }
-    });
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        const nameWithoutExt = path.basename(file.originalname, ext);
+        cb(null, nameWithoutExt + '-' + uniqueSuffix + ext);
+    }
+});
 
 // File filter to allow only images
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
@@ -75,24 +73,32 @@ router.post('/', authMiddleware, upload.single('image'), async (req: AuthRequest
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const originalName = path.basename(req.file.originalname, path.extname(req.file.originalname));
 
+        const protocol = req.protocol;
+        const host = req.get('host');
+
+        // Path handling
+        const originalPath = req.file.path; // Saved by multer
+        const uploadedFilename = req.file.filename;
+
         // If Sharp is available, optimize the image
-        if (sharp && req.file.buffer) {
-            const filename = `${originalName}-${uniqueSuffix}.webp`;
+        if (sharp) {
+            const optimizedFilename = `${originalName}-${uniqueSuffix}.webp`;
             const thumbnailFilename = `${originalName}-${uniqueSuffix}-thumb.webp`;
 
-            // Process and optimize main image
-            const mainImagePath = path.join(uploadsDir, filename);
-            await sharp(req.file.buffer)
+            const optimizedPath = path.join(uploadsDir, optimizedFilename);
+            const thumbnailPath = path.join(thumbnailsDir, thumbnailFilename);
+
+            // Process and optimize main image from DISK
+            await sharp(originalPath)
                 .resize(IMAGE_CONFIG.maxWidth, IMAGE_CONFIG.maxHeight, {
                     fit: 'inside',
                     withoutEnlargement: true
                 })
                 .webp({ quality: IMAGE_CONFIG.quality })
-                .toFile(mainImagePath);
+                .toFile(optimizedPath);
 
             // Generate thumbnail
-            const thumbnailPath = path.join(thumbnailsDir, thumbnailFilename);
-            await sharp(req.file.buffer)
+            await sharp(originalPath)
                 .resize(IMAGE_CONFIG.thumbnailSize, IMAGE_CONFIG.thumbnailSize, {
                     fit: 'cover',
                     position: 'center'
@@ -100,19 +106,24 @@ router.post('/', authMiddleware, upload.single('image'), async (req: AuthRequest
                 .webp({ quality: 70 })
                 .toFile(thumbnailPath);
 
+            // Remove the original unoptimized file to save space
+            try {
+                fs.unlinkSync(originalPath);
+            } catch (err) {
+                console.warn('Failed to delete original file:', err);
+            }
+
             // Get file sizes for response
-            const mainStats = fs.statSync(mainImagePath);
+            const mainStats = fs.statSync(optimizedPath);
             const thumbStats = fs.statSync(thumbnailPath);
 
-            const protocol = req.protocol;
-            const host = req.get('host');
-            const imageUrl = `${protocol}://${host}/uploads/${filename}`;
+            const imageUrl = `${protocol}://${host}/uploads/${optimizedFilename}`;
             const thumbnailUrl = `${protocol}://${host}/uploads/thumbnails/${thumbnailFilename}`;
 
             return res.json({
                 url: imageUrl,
                 thumbnail: thumbnailUrl,
-                filename: filename,
+                filename: optimizedFilename,
                 originalSize: req.file.size,
                 optimizedSize: mainStats.size,
                 thumbnailSize: thumbStats.size,
@@ -120,16 +131,12 @@ router.post('/', authMiddleware, upload.single('image'), async (req: AuthRequest
                 optimized: true
             });
         } else {
-            // Fallback: save as-is (disk storage already saved the file)
-            const filename = req.file.filename || `${originalName}-${uniqueSuffix}${path.extname(req.file.originalname)}`;
-
-            const protocol = req.protocol;
-            const host = req.get('host');
-            const imageUrl = `${protocol}://${host}/uploads/${filename}`;
+            // Fallback: file is already saved as-is
+            const imageUrl = `${protocol}://${host}/uploads/${uploadedFilename}`;
 
             return res.json({
                 url: imageUrl,
-                filename: filename,
+                filename: uploadedFilename,
                 size: req.file.size,
                 mimetype: req.file.mimetype,
                 optimized: false
@@ -137,6 +144,10 @@ router.post('/', authMiddleware, upload.single('image'), async (req: AuthRequest
         }
     } catch (error) {
         console.error('Upload error:', error);
+        // Clean up checking
+        if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+            try { fs.unlinkSync(req.file.path); } catch (e) { }
+        }
         res.status(500).json({ error: 'خطا در آپلود فایل' });
     }
 });

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 interface AccordionContextValue {
   value: string[]
-  onValueChange: (value: string[]) => void
+  onValueChange: (value: string) => void
 }
 
 const AccordionContext = React.createContext<AccordionContextValue | null>(null)
@@ -30,7 +30,7 @@ function Accordion({ type = "multiple", defaultValue = [], value, onValueChange,
       : currentValue.includes(itemValue)
         ? currentValue.filter(v => v !== itemValue)
         : [...currentValue, itemValue]
-    
+
     if (value === undefined) {
       setInternalValue(newValue)
     }
@@ -62,11 +62,11 @@ interface AccordionTriggerProps {
 function AccordionTrigger({ children, className }: AccordionTriggerProps) {
   const context = React.useContext(AccordionContext)
   if (!context) throw new Error("AccordionTrigger must be used within Accordion")
-  
+
   const itemValue = React.useMemo(() => {
     const child = React.Children.toArray(children)[0]
-    if (React.isValidElement(child) && child.props.value) {
-      return child.props.value
+    if (React.isValidElement(child) && (child.props as Record<string, unknown>).value) {
+      return (child.props as Record<string, unknown>).value as string
     }
     return ""
   }, [children])
@@ -99,11 +99,11 @@ interface AccordionContentProps {
 function AccordionContent({ children, className }: AccordionContentProps) {
   const context = React.useContext(AccordionContext)
   if (!context) throw new Error("AccordionContent must be used within Accordion")
-  
+
   const itemValue = React.useMemo(() => {
     const parent = React.Children.toArray(children)[0]
-    if (React.isValidElement(parent) && parent.props.value) {
-      return parent.props.value
+    if (React.isValidElement(parent) && (parent.props as Record<string, unknown>).value) {
+      return (parent.props as Record<string, unknown>).value as string
     }
     return ""
   }, [children])

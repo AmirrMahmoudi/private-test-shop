@@ -68,11 +68,8 @@ function SelectValue({ placeholder }: { placeholder?: string }) {
   const context = React.useContext(SelectContext)
   if (!context) throw new Error("SelectValue must be used within Select")
 
-  const selectedChild = React.Children.toArray(context.value).find(
-    (child) => React.isValidElement(child) && child.props.value === context.value
-  )
-
-  return <span>{selectedChild ? React.isValidElement(selectedChild) && selectedChild.props.children : placeholder}</span>
+  // The SelectValue displays the placeholder or selected value text
+  return <span>{context.value || placeholder}</span>
 }
 
 interface SelectContentProps {

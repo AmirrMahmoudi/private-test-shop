@@ -14,11 +14,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <CartProvider>
           {children}
           <NavigationEvents />
-          <Toaster position="top-center" richColors />
+          <Toaster />
           <PageLoadingIndicator />
         </CartProvider>
       </LoadingProvider>
     </ThemeProvider>
   );
 }
-

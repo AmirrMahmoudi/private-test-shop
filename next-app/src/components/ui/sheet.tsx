@@ -48,8 +48,8 @@ function SheetTrigger({ children, className, asChild }: SheetTriggerProps) {
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children, {
       onClick: () => context.setOpen(true),
-      className: cn(className, children.props.className)
-    } as any)
+      className: cn(className, (children.props as Record<string, unknown>).className as string | undefined)
+    } as React.HTMLAttributes<HTMLElement>)
   }
 
   return (

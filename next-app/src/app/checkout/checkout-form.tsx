@@ -211,7 +211,7 @@ export default function CheckoutForm() {
                                 {items.map(item => (
                                     <div key={item.id} className="flex gap-3 text-sm">
                                         <div className="relative h-12 w-12 shrink-0 rounded overflow-hidden bg-muted">
-                                            <Image src={item.image} alt={item.name} fill className="object-cover" />
+                                            <Image src={item.image || '/placeholder.jpg'} alt={item.name} fill className="object-cover" />
                                         </div>
                                         <div className="flex-1">
                                             <p className="truncate font-medium">{item.name}</p>

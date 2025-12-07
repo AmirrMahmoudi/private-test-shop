@@ -39,7 +39,7 @@ export default function CartContent() {
                             <CardContent className="p-4 flex flex-col sm:flex-row gap-4 items-center">
                                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-muted">
                                     <Image
-                                        src={item.image}
+                                        src={item.image || '/placeholder.jpg'}
                                         alt={item.name}
                                         fill
                                         className="object-cover"
@@ -48,7 +48,7 @@ export default function CartContent() {
 
                                 <div className="flex-1 w-full text-right">
                                     <h3 className="font-semibold text-lg mb-1">{item.name}</h3>
-                                    <p className="text-sm text-muted-foreground mb-2">{item.subcategory}</p>
+                                    <p className="text-sm text-muted-foreground mb-2">{item.subcategory?.name || item.category?.name || ''}</p>
                                     <p className="font-medium text-primary">
                                         {item.price.toLocaleString('fa-IR')} تومان
                                     </p>

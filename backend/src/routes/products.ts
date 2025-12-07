@@ -18,7 +18,7 @@ const validate = (req: Request, res: Response, next: Function) => {
 router.get('/', async (req: Request, res: Response) => {
     try {
         const page = parseInt(req.query.page as string) || 1;
-        const limit = Math.min(parseInt(req.query.limit as string) || 50, 100); // Max 100 per page
+        const limit = Math.min(parseInt(req.query.limit as string) || 50, 500); // Max 500 per page to save memory while allowing larger fetches
         const skip = (page - 1) * limit;
         const categoryId = req.query.category as string | undefined;
         const subcategoryId = req.query.subcategory as string | undefined;

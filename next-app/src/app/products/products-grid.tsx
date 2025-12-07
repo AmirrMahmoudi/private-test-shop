@@ -31,9 +31,7 @@ export default function ProductsGrid({ products, categories, gridCols = 3 }: Pro
             {products.map((product) => {
                 const productHref = `/product/${product.slug || product.id}`;
                 const productImage = product.image || (product.images && product.images[0]) || '';
-                const categoryName = typeof product.category === 'string'
-                    ? categories.find((c) => c.id === product.category)?.name || product.category
-                    : product.category?.name || '';
+                const categoryName = categories.find((c) => c.id === product.categoryId)?.name || product.category?.name || '';
                 const brandName = typeof product.brand === 'string'
                     ? product.brand
                     : product.brand?.name || '';
