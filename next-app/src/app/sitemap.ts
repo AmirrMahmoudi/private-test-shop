@@ -23,48 +23,54 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             },
             {
                 url: `${baseUrl}/products`,
-                lastModified: new Date(),
-                changeFrequency: 'daily' as const,
-                priority: 0.8,
-            },
-            {
-                url: `${baseUrl}/cart`,
-                lastModified: new Date(),
-                changeFrequency: 'weekly' as const,
-                priority: 0.5,
-            },
-            {
-                url: `${baseUrl}/checkout`,
-                lastModified: new Date(),
-                changeFrequency: 'weekly' as const,
-                priority: 0.5,
-            },
-        ];
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://88shop.ir';
 
-        // Category pages
-        const categoryRoutes = categories.map((category: any) => ({
-            url: `${baseUrl}/products/${category.id}`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly' as const,
-            priority: 0.7,
-        }));
+                const staticRoutes = [
+                    '',
+                    '/about',
+                    '/contact',
+                    '/products',
+                    '/login',
+                    '/register',
+                ].map((route) => ({
+                    url: `${baseUrl}${route}`,
+                    lastModified: new Date(),
+                    changeFrequency: 'daily' as const,
+                    priority: route === '' ? 1 : 0.8,
+                }));
 
-        // Product pages
-        const productRoutes = (products.products || products).map((product: any) => ({
-            url: `${baseUrl}/products/${product.slug || product.id}`,
-            lastModified: new Date(product.updatedAt || product.createdAt),
+                try {
+                    const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+                    const apiBaseUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+
+                    // Add timeout to fetch to fail fast during build
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch(`${apiBaseUrl}/products?limit=1000`, {
+                        signal: controller.signal,
+                        next: { revalidate: 3600 }
+                    });
+
+                    clearTimeout(timeoutId);
+
+    if(!response.ok) {
+                throw new Error('Failed to fetch products');
+            }
+
+    const data = await response.json();
+        const products = data.products || [];
+
+        const productRoutes = products.map((product: any) => ({
+            url: `${baseUrl}/product/${product.slug || product.id}`,
+            lastModified: new Date(product.updatedAt || new Date()),
             changeFrequency: 'weekly' as const,
             priority: 0.6,
         }));
 
-        return [...routes, ...categoryRoutes, ...productRoutes];
+        return [...staticRoutes, ...productRoutes];
     } catch (error) {
-        console.error('Error generating sitemap:', error);
-        return [
-            {
-                url: baseUrl,
-                lastModified: new Date(),
-            },
-        ];
+        console.warn('Failed to generate dynamic sitemap, returning static only:', error);
+        return staticRoutes;
     }
 }
