@@ -72,7 +72,7 @@
 
 // به جاش فقط این یه خط رو بذار:
 
-export const revalidate = 30; // هر ۳۰ ثانیه داشبورد ادمین تازه بشه (کاملاً منطقیه)
+export const dynamic = "force-dynamic";
 
 import { fetchProducts, fetchOrders } from "@/lib/api";
 

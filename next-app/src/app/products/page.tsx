@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import NavbarServer from "@/components/NavbarServer";
 import ProductsClient from "./products-client";
@@ -39,8 +40,8 @@ async function getCategories() {
             id: cat.id,
             name: cat.name,
             slug: cat.slug,
-            subcategories: Array.isArray(cat.subcategories) 
-                ? cat.subcategories 
+            subcategories: Array.isArray(cat.subcategories)
+                ? cat.subcategories
                 : (typeof cat.subcategories === 'string'
                     ? JSON.parse(cat.subcategories)
                     : [])
@@ -65,8 +66,8 @@ export default async function ProductsPage() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background">
             <NavbarServer />
-            <ProductsClient 
-                initialProducts={products} 
+            <ProductsClient
+                initialProducts={products}
                 categories={categories}
             />
         </div>

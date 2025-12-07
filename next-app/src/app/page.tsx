@@ -61,7 +61,7 @@
 // export const revalidate = 0;
 
 // به جاش اینو بذار:
-export const revalidate = 60; // هر ۶۰ ثانیه صفحه اصلی تازه بشه (کاملاً کافیه و منطقیه)
+export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import NavbarServer from "@/components/NavbarServer";
