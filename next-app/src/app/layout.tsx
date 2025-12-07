@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Vazirmatn } from "next/font/google";
+// import { Vazirmatn } from "next/font/google"; // Disabled due to network issues on build server
 import "./globals.css";
 import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
 import Providers from "@/components/Providers";
 
-const vazirmatn = Vazirmatn({
-  subsets: ["arabic", "latin"],
-  variable: "--font-vazirmatn",
-  display: "swap",
-});
+// const vazirmatn = Vazirmatn({
+//   subsets: ["arabic", "latin"],
+//   variable: "--font-vazirmatn",
+//   display: "swap",
+// });
 
 export const metadata: Metadata = {
   title: "فروشگاه لوازم آرایشی",
@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl">
-      <body className={`${vazirmatn.variable} font-sans antialiased bg-background text-foreground`}>
+      <body className={`font-sans antialiased bg-background text-foreground`}>
         <ErrorReporter />
         <Script
           src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts//route-messenger.js"
