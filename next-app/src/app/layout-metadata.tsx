@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    metadataBase: new URL('https://beautyshop.com'), // تغییر به دامنه واقعی
+    metadataBase: new URL('https://88shop.ir'), // تغییر به دامنه واقعی
     title: {
         default: 'فروشگاه لوازم آرایشی بیوتی‌شاپ',
         template: '%s | بیوتی‌شاپ'
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: 'website',
         locale: 'fa_IR',
-        url: 'https://beautyshop.com',
+        url: 'https://88shop.ir',
         siteName: 'بیوتی‌شاپ',
         title: 'فروشگاه لوازم آرایشی بیوتی‌شاپ',
         description: 'خرید لوازم آرایشی، مراقبت پوست و مو با بهترین قیمت',
