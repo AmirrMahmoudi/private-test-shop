@@ -1,13 +1,13 @@
-import { PrismaClient } from "@prisma/client/index";import { createProductSlug } from '../src/utils/slug';
+import { PrismaClient } from "@prisma/client/index"; import { createProductSlug } from '../src/utils/slug';
 
 const prisma = new PrismaClient();
 
 async function addSlugsToProducts() {
     console.log('Starting to add slugs to products...');
-    
+
     const products = await prisma.product.findMany({
         where: {
-            slug: null
+            slug: { equals: null } as any
         }
     });
 
@@ -15,15 +15,15 @@ async function addSlugsToProducts() {
 
     for (const product of products) {
         const slug = createProductSlug(product.name, product.id);
-        
+
         // Ensure unique slug
         let finalSlug = slug;
         let counter = 1;
-        while (await prisma.product.findFirst({ 
-            where: { 
+        while (await prisma.product.findFirst({
+            where: {
                 slug: finalSlug,
                 NOT: { id: product.id }
-            } 
+            }
         })) {
             finalSlug = `${slug}-${counter}`;
             counter++;
