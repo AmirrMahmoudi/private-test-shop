@@ -47,8 +47,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }));
 
         return [...staticRoutes, ...productRoutes];
-    } catch (error) {
-        console.warn('Failed to generate dynamic sitemap, returning static only:', error);
+    } catch (error: any) {
+        if (error.cause?.code === 'ECONNREFUSED' || error.message.includes('fetch failed')) {
+            console.warn('Note: Backend unreachable during build. Using static sitemap only.');
+        } else {
+            console.warn('Failed to generate dynamic sitemap, returning static only:', error);
+        }
         return staticRoutes;
     }
 }
