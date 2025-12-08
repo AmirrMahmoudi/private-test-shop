@@ -43,6 +43,7 @@ COPY --from=builder /app/prisma ./prisma
 
 # Copy Prisma Client (standard @prisma/client path)
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # Create uploads and data dirs
 RUN mkdir -p public/uploads && mkdir -p /app/data
