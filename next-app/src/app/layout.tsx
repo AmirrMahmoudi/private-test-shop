@@ -11,9 +11,15 @@ import Providers from "@/components/Providers";
 //   display: "swap",
 // });
 
+import { metadata as baseMetadata } from "./layout-metadata";
+
 export const metadata: Metadata = {
-  title: "فروشگاه لوازم آرایشی",
-  description: "بهترین محصولات آرایشی و بهداشتی",
+  ...baseMetadata,
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico', // assuming we might want this, or just standard icon
+  },
 };
 
 export default function RootLayout({
