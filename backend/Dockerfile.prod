@@ -42,8 +42,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
 # Copy Prisma Client (standard @prisma/client path)
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Prisma Client will be generated at runtime/start to ensure compatibility
 
 # Create uploads and data dirs
 RUN mkdir -p public/uploads && mkdir -p /app/data
@@ -53,4 +52,4 @@ ENV DATABASE_URL="file:/app/data/prod.db"
 
 EXPOSE 5000
 # Run migrations before starting
-CMD ["sh", "-c", "npx prisma migrate deploy && pnpm start"]
+CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && pnpm start"]
