@@ -33,7 +33,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=https://api.88shop.ir
+      - NEXT_PUBLIC_API_URL=https://api.88shop.ir/api
       - INTERNAL_API_URL=http://backend:5000/api
     depends_on:
       - backend
@@ -54,7 +54,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - NEXT_PUBLIC_API_URL=https://api.88shop.ir
+      - NEXT_PUBLIC_API_URL=https://api.88shop.ir/api
       - INTERNAL_API_URL=http://backend:5000/api
     depends_on:
       - backend
