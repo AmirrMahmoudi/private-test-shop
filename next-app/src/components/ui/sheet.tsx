@@ -69,8 +69,16 @@ interface SheetContentProps {
   side?: "left" | "right" | "top" | "bottom"
 }
 
+import { createPortal } from "react-dom"
+
 function SheetContent({ children, className, side = "right" }: SheetContentProps) {
   const context = React.useContext(SheetContext)
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   if (!context) throw new Error("SheetContent must be used within Sheet")
 
   React.useEffect(() => {
@@ -84,19 +92,19 @@ function SheetContent({ children, className, side = "right" }: SheetContentProps
     }
   }, [context.open])
 
-  if (!context.open) return null
+  if (!mounted || !context.open) return null
 
-  return (
+  return createPortal(
     <>
       <div
-        className="fixed inset-0 z-50 bg-black/50"
+        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
         onClick={() => context.setOpen(false)}
       />
       <div
         className={cn(
-          "fixed z-50 h-full w-3/4 border-l bg-background p-6 shadow-lg transition-transform",
-          side === "right" && "right-0 top-0",
-          side === "left" && "left-0 top-0",
+          "fixed z-[100] h-full w-3/4 border-l bg-background p-6 shadow-2xl transition-transform duration-300 ease-in-out",
+          side === "right" && "right-0 top-0 animate-in slide-in-from-right",
+          side === "left" && "left-0 top-0 animate-in slide-in-from-left",
           className
         )}
       >
@@ -109,7 +117,8 @@ function SheetContent({ children, className, side = "right" }: SheetContentProps
         </button>
         {children}
       </div>
-    </>
+    </>,
+    document.body
   )
 }
 

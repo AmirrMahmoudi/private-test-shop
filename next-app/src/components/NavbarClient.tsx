@@ -124,7 +124,7 @@ export default function NavbarClient({ categories, products }: NavbarClientProps
                                 <Menu className="h-5 w-5" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="w-[320px] p-0 border-r-0">
+                        <SheetContent side="right" className="w-full sm:w-[350px] p-0 border-r-0">
                             {/* Header */}
                             <div className="p-6 border-b bg-gradient-to-l from-primary/5 to-transparent">
                                 <SheetTitle className="text-right text-xl font-bold flex items-center justify-end gap-2">
