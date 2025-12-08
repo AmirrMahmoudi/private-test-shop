@@ -26,7 +26,7 @@ services:
       context: ./next-app
       dockerfile: Dockerfile.prod
       args:
-        NEXT_PUBLIC_API_URL: https://api.88shop.ir
+        NEXT_PUBLIC_API_URL: https://api.88shop.ir/api
     container_name: shop-frontend
     restart: always
     ports:
@@ -46,7 +46,7 @@ services:
       context: ./admin-panel
       dockerfile: Dockerfile.prod
       args:
-        NEXT_PUBLIC_API_URL: https://api.88shop.ir
+        NEXT_PUBLIC_API_URL: https://api.88shop.ir/api
     container_name: shop-admin
     restart: always
     ports:
