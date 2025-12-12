@@ -9,7 +9,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
-    "add-slugs": "tsx scripts/add-slugs.ts"
+    "add-slugs": "tsx scripts/add-slugs.ts",
+    "reset-password": "tsx scripts/reset-admin-password.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
